@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Space N Beyond — Space Intranet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --accent: #E8572A;
+      --accent-light: #FDF1EC;
+      --bg: #F7F5F0;
+      --card: #FFFFFF;
+      --text: #1C1B18;
+      --muted: #7A7870;
+      --border: #E4E1D8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    #lockScreen {
+      position: fixed; inset: 0;
+      background: #1C1B18;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 100; gap: 1.5rem;
+    }
+    #lockScreen h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; color: #F7F5F0; }
+    #lockScreen p { color: #7A7870; font-size: 0.95rem; text-align: center; max-width: 320px; line-height: 1.6; }
+    .lock-icon { width: 56px; height: 56px; background: #2C2B28; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+    header { background: var(--text); padding: 1.25rem 2rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: #F7F5F0; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent); }
+    .date-badge { font-size: 0.8rem; color: #7A7870; background: #2C2B28; padding: 0.35rem 0.85rem; border-radius: 100px; }
+
+    .hero { background: var(--accent); padding: 2.5rem 2rem; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; right: -60px; top: -60px; width: 250px; height: 250px; border-radius: 50%; background: rgba(255,255,255,0.07); }
+    .hero h2 { font-family: 'DM Serif Display', serif; font-size: clamp(1.6rem, 4vw, 2.4rem); color: #fff; line-height: 1.2; position: relative; }
+    .hero p { color: rgba(255,255,255,0.75); margin-top: 0.5rem; font-size: 0.95rem; position: relative; }
+
+    .main-grid { max-width: 1100px; margin: 2.5rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 720px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+    .card-header { padding: 1.1rem 1.4rem 0.75rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.6rem; }
+    .card-header h3 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-body { padding: 1.2rem 1.4rem; }
+
+    .bday-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+    .bday-item:last-child { border-bottom: none; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.85rem; flex-shrink: 0; }
+    .bday-name { font-weight: 500; font-size: 0.9rem; }
+    .bday-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .bday-date { margin-left: auto; font-size: 0.78rem; color: var(--accent); font-weight: 600; background: var(--accent-light); padding: 0.2rem 0.6rem; border-radius: 100px; flex-shrink: 0; }
+    .today-badge { font-size: 0.7rem; background: var(--accent); color: #fff; padding: 0.15rem 0.5rem; border-radius: 100px; margin-left: 0.4rem; }
+    .empty-state { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+
+    .holiday-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+    .holiday-item:last-child { border-bottom: none; }
+    .hday-cal { width: 40px; text-align: center; background: var(--accent-light); border: 1px solid rgba(232,87,42,0.2); border-radius: 10px; padding: 0.3rem 0.2rem; flex-shrink: 0; }
+    .hday-cal .day { font-size: 1.1rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .hday-cal .mon { font-size: 0.6rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-top: 2px; }
+    .hday-name { font-weight: 500; font-size: 0.9rem; }
+    .hday-type { font-size: 0.7rem; padding: 0.15rem 0.55rem; border-radius: 100px; font-weight: 500; }
+    .type-public { background: #EAF3DE; color: #3B6D11; }
+    .type-optional { background: #E6F1FB; color: #185FA5; }
+    .type-restricted { background: #FAEEDA; color: #854F0B; }
+
+    .ann-item { padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+    .ann-item:last-child { border-bottom: none; }
+    .ann-top { display: flex; align-items: flex-start; gap: 0.7rem; }
+    .ann-emoji { width: 36px; height: 36px; background: var(--bg); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
+    .ann-title { font-weight: 600; font-size: 0.9rem; }
+    .ann-body { font-size: 0.83rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.5; }
+    .ann-footer { font-size: 0.72rem; color: var(--muted); margin-top: 0.5rem; }
+
+    .span-2 { grid-column: span 2; }
+    @media (max-width: 720px) { .span-2 { grid-column: span 1; } }
+
+    .loading { display: flex; align-items: center; justify-content: center; padding: 2rem; gap: 0.5rem; color: var(--muted); font-size: 0.85rem; }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { text-align: center; padding: 2rem; font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--border); margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+<div id="lockScreen">
+  <div class="lock-icon">🔒</div>
+  <h1>Members Only</h1>
+  <p>This page is only accessible from inside the co-working space. Connect to the space WiFi and try again.</p>
+</div>
+
+<div id="mainContent" style="display:none;">
+  <header>
+    <div class="logo">Space<span> N </span>Beyond</div>
+    <div class="date-badge" id="headerDate"></div>
+  </header>
+  <div class="hero">
+    <h2>Good to see you 👋</h2>
+    <p id="heroSub"></p>
+  </div>
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-header"><div class="dot" style="background:#E8572A;"></div><h3>Birthdays this month</h3></div>
+      <div class="card-body" id="bdayList"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="dot" style="background:#185FA5;"></div><h3>Announcements</h3></div>
+      <div class="card-body" id="annList"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    </div>
+    <div class="card span-2">
+      <div class="card-header"><div class="dot" style="background:#3B6D11;"></div><h3>Holiday calendar — <span id="holidayYear"></span></h3></div>
+      <div class="card-body" id="holidayList"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+    </div>
+  </div>
+  <footer>Space N Beyond Intranet · Members only · Data from private Google Sheet</footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CONFIG — fill these in (see SETUP.md)
+// ══════════════════════════════════════════════════════
+const CONFIG = {
+  OFFICE_IP:    "YOUR_OFFICE_PUBLIC_IP",   // e.g. "103.45.67.89"
+  SPREADSHEET_ID: "YOUR_SPREADSHEET_ID",   // from the sheet URL
+  API_KEY:      "YOUR_API_KEY",    // restricted to your server IP
+
+  // Exact names of your sheet tabs
+  SHEETS: {
+    employees:     "Employees",
+    holidays:      "Holidays",
+    announcements: "Announcements",
+  },
+
+  SPACE_NAME: "Space N Beyond",
+};
+
+// ── HELPERS ──
+const NOW   = new Date();
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const SHORT  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const AVATAR_COLORS = [
+  { bg:"#FDF1EC", text:"#E8572A" }, { bg:"#E1F5EE", text:"#0F6E56" },
+  { bg:"#E6F1FB", text:"#185FA5" }, { bg:"#FAEEDA", text:"#854F0B" },
+  { bg:"#FBEAF0", text:"#993556" }, { bg:"#EAF3DE", text:"#3B6D11" },
+];
+function avatarColor(name) {
+  let h = 0; for (let c of name) h = (h*31 + c.charCodeAt(0)) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[Math.abs(h)];
+}
+function initials(name) { return name.trim().split(/\s+/).map(w=>w[0].toUpperCase()).slice(0,2).join(''); }
+function isSameDay(a,b) { return a.getDate()===b.getDate() && a.getMonth()===b.getMonth(); }
+function parseDate(str) {
+  if (!str) return null; str = str.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) { const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); }
+  const p = str.split('/'); if (p.length===3) { const [d,m,y]=p.map(Number); return new Date(y,m-1,d); }
+  return new Date(str);
+}
+
+// ── GOOGLE SHEETS API FETCH ──
+// Uses the Sheets API v4 — sheet must be shared with the service account email
+// API key must be restricted to your server's IP in Google Cloud Console
+async function fetchSheet(sheetName) {
+  const range  = encodeURIComponent(`${sheetName}!A1:Z1000`);
+  const url    = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SPREADSHEET_ID}/values/${range}?key=${CONFIG.API_KEY}`;
+  const r = await fetch(url);
+  if (!r.ok) {
+    const err = await r.json();
+    throw new Error(err.error?.message || `Failed to fetch ${sheetName}`);
+  }
+  const data = await r.json();
+  const [headers, ...rows] = data.values || [];
+  if (!headers) return [];
+  return rows.map(row => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = (row[i] || '').trim());
+    return obj;
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+// ── RENDER BIRTHDAYS ──
+function renderBirthdays(employees) {
+  const el = document.getElementById('bdayList');
+  const sorted = employees
+    .map(e => ({...e, dob: parseDate(e.DOB || e['Date of Birth'] || e.Birthday)}))
+    .filter(e => e.dob && e.dob.getMonth() === NOW.getMonth())
+    .sort((a,b) => a.dob.getDate() - b.dob.getDate());
+
+  if (!sorted.length) { el.innerHTML = `<div class="empty-state">🎈 No birthdays this month.<br/>Check back next month!</div>`; return; }
+  el.innerHTML = sorted.map(e => {
+    const col  = avatarColor(e.Name||'?');
+    const name = e.Name||'Unknown';
+    const age  = NOW.getFullYear() - e.dob.getFullYear();
+    const today = isSameDay(e.dob, NOW);
+    return `<div class="bday-item">
+      <div class="avatar" style="background:${col.bg};color:${col.text};">${initials(name)}</div>
+      <div>
+        <div class="bday-name">${name}${today?`<span class="today-badge">Today! 🎂</span>`:''}</div>
+        <div class="bday-sub">${e.Gender?e.Gender+' · ':''}Turning ${age}</div>
+      </div>
+      <div class="bday-date">${e.dob.getDate()} ${SHORT[e.dob.getMonth()]}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER HOLIDAYS ──
+function renderHolidays(holidays) {
+  document.getElementById('holidayYear').textContent = NOW.getFullYear();
+  const el = document.getElementById('holidayList');
+  const items = holidays
+    .map(h => ({...h, date: parseDate(h.Date||h.date)}))
+    .filter(h => h.date && h.date.getFullYear()===NOW.getFullYear())
+    .sort((a,b) => a.date - b.date);
+
+  if (!items.length) { el.innerHTML = `<div class="empty-state">No holidays found.</div>`; return; }
+
+  const byMonth = {};
+  for (const h of items) {
+    const m = h.date.getMonth();
+    if (!byMonth[m]) byMonth[m] = [];
+    byMonth[m].push(h);
+  }
+  const typeClass = { Public:'type-public', Optional:'type-optional', Restricted:'type-restricted' };
+  el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+    ${Object.keys(byMonth).map(Number).sort((a,b)=>a-b).map(m => `
+      <div>
+        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.6rem;">${MONTHS[m]}</div>
+        ${byMonth[m].map(h => {
+          const type = h.Type||h.type||'Public';
+          const past = h.date < NOW && !isSameDay(h.date,NOW);
+          return `<div class="holiday-item" style="${past?'opacity:0.4;':''}">
+            <div class="hday-cal"><div class="day">${h.date.getDate()}</div><div class="mon">${SHORT[m]}</div></div>
+            <div style="flex:1;min-width:0;">
+              <div class="hday-name">${h['Holiday Name']||h.Holiday||h.Name||'Holiday'}</div>
+              <span class="hday-type ${typeClass[type]||'type-public'}">${type}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`).join('')}
+  </div>`;
+}
+
+// ── RENDER ANNOUNCEMENTS ──
+function renderAnnouncements(announcements) {
+  const el = document.getElementById('annList');
+  const sorted = [...announcements]
+    .sort((a,b) => parseDate(b.Date||b.date) - parseDate(a.Date||a.date))
+    .slice(0, 6);
+  if (!sorted.length) { el.innerHTML = `<div class="empty-state">No announcements yet.</div>`; return; }
+  el.innerHTML = sorted.map(a => {
+    const date    = parseDate(a.Date||a.date);
+    const daysAgo = date ? Math.floor((NOW-date)/86400000) : null;
+    const ago     = daysAgo===0?'Today':daysAgo===1?'Yesterday':daysAgo!==null?`${daysAgo}d ago`:'';
+    return `<div class="ann-item">
+      <div class="ann-top">
+        <div class="ann-emoji">${a.Emoji||a.emoji||'📌'}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="ann-title">${a.Title||a.title||'Announcement'}</div>
+          <div class="ann-body">${a.Body||a.body||a.Message||''}</div>
+          <div class="ann-footer">${ago}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── INIT ──
+async function init() {
+  // Step 1: IP check
+  let ip = '';
+  try { const r = await fetch('https://api.ipify.org?format=json'); ip = (await r.json()).ip; } catch(e){}
+
+  const allowed = !CONFIG.OFFICE_IP ||
+                  CONFIG.OFFICE_IP === 'YOUR_OFFICE_PUBLIC_IP' ||
+                  ip === CONFIG.OFFICE_IP;
+
+  if (!allowed) return;
+
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  document.getElementById('headerDate').textContent = `${days[NOW.getDay()]}, ${NOW.getDate()} ${MONTHS[NOW.getMonth()]} ${NOW.getFullYear()}`;
+  document.getElementById('heroSub').textContent = `${MONTHS[NOW.getMonth()]}'s highlights for ${CONFIG.SPACE_NAME}`;
+  document.getElementById('holidayYear').textContent = NOW.getFullYear();
+
+  // Step 2: fetch all sheets in parallel
+  const isConfigured = CONFIG.SPREADSHEET_ID !== 'YOUR_SPREADSHEET_ID';
+
+  if (!isConfigured) {
+    // Show placeholder message
+    ['bdayList','annList','holidayList'].forEach(id => {
+      document.getElementById(id).innerHTML = `<div class="empty-state">⚙️ Add your Spreadsheet ID and API key in CONFIG to load data.</div>`;
+    });
+    return;
+  }
+
+  try {
+    const [employees, holidays, announcements] = await Promise.all([
+      fetchSheet(CONFIG.SHEETS.employees),
+      fetchSheet(CONFIG.SHEETS.holidays),
+      fetchSheet(CONFIG.SHEETS.announcements),
+    ]);
+    renderBirthdays(employees);
+    renderHolidays(holidays);
+    renderAnnouncements(announcements);
+  } catch (err) {
+    ['bdayList','annList','holidayList'].forEach(id => {
+      document.getElementById(id).innerHTML = `<div class="empty-state">⚠️ Could not load data.<br/><small style="color:var(--muted)">${err.message}</small></div>`;
+    });
+  }
+}
+
+init();
+</script>
+</body>
+</html>
