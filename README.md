@@ -1,4 +1,4 @@
-# 🏢 The Hub — Co-working Space Intranet
+# 🏢 Space N Beyond — Co-working Space Intranet
 
 A lightweight, single-file intranet website for co-working spaces.  
 Pulls live data from a private Google Sheet. No backend. No database. Just one HTML file.
@@ -124,7 +124,7 @@ const CONFIG = {
     announcements: "Announcements",
   },
 
-  SPACE_NAME: "The Hub",                       // your space's name
+  SPACE_NAME: "Space N Beyond",                       // your space's name
 };
 ```
 
